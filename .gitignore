@@ -1,0 +1,9 @@
+# Secrets: the Smithsonian API key (never push these)
+keys.js
+Project01-main/utils/keys.example.js
+
+# macOS
+.DS_Store
+
+# Local editor / assistant settings
+.claude/

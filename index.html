@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Nation's Odds &amp; Ends</title>
+    <!-- Load D3.js v7 CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <main class="bento" id="bento">
+        <!-- Soft "bridges" drawn between linked boxes while a filter is on -->
+        <svg class="bridges" id="bridges" aria-hidden="true"></svg>
+
+        <!-- BANNER: how to use the page ------------------------------------ -->
+        <section class="card cell-banner" data-card="banner" data-linked data-base-color="ink" data-color="ink" aria-live="polite">
+            <div class="banner-default">
+                <span class="banner-icon" aria-hidden="true">👆</span>
+                <p class="banner-text">Click any bar, column or country to filter the whole page, and peel back a card’s corner to see the raw data behind it.</p>
+            </div>
+            <div class="banner-active" hidden>
+                <p class="banner-text">Showing <strong data-stat="total">…</strong> <span id="banner-phrase">objects</span></p>
+                <button type="button" class="clear-btn" data-clear-filter>✕ Clear filter</button>
+            </div>
+        </section>
+
+        <!-- HERO ------------------------------------------------------------ -->
+        <header class="card cell-hero" data-color="yellow">
+            <div class="hero-top">
+                <button id="theme-toggle" class="round-btn" aria-label="Toggle dark mode">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
+
+            <h1 class="headline">
+                <span>The Nation’s</span>
+                <span>Odds &amp; Ends<span class="headline-dot">.</span></span>
+            </h1>
+
+            <div class="hero-foot">
+                <p class="dek">
+                    We asked the Smithsonian’s open collection for one word — <em>miscellaneous</em> — and got back
+                    <strong><span data-stat="grandTotal">…</span> objects</strong> that didn’t fit anywhere else.
+                    Here is where they come from, who keeps them, what they are, and when they were made.
+                </p>
+                <div class="sticker" aria-hidden="true">
+                    <small>Filed under</small>
+                    <strong>Misc.</strong>
+                </div>
+            </div>
+        </header>
+
+        <!-- KEY NUMBERS ----------------------------------------------------- -->
+        <section class="card cell-total" data-card="total" data-flip data-linked data-base-color="ink" data-color="ink" aria-label="Objects shown">
+            <span class="tag">Objects shown</span>
+            <p class="big-number" data-stat="total">…</p>
+            <p class="card-text" id="total-text">every record the search returned. Each one is counted in the charts below.</p>
+        </section>
+
+        <section class="card cell-small" data-card="units-stat" data-flip data-linked data-base-color="blue" data-color="blue" aria-label="Smithsonian units">
+            <p class="big-number" data-stat="units">…</p>
+            <p class="card-text">Smithsonian units hold them</p>
+        </section>
+
+        <section class="card cell-small" data-card="countries-stat" data-flip data-linked data-base-color="green" data-color="green" aria-label="Countries">
+            <p class="big-number" data-stat="countries">…</p>
+            <p class="card-text">countries named as their place</p>
+        </section>
+
+        <!-- MAP (primary chart) --------------------------------------------- -->
+        <section class="card cell-map" data-card="map" data-dim="country" data-flip data-linked data-base-color="green" data-color="green" aria-labelledby="map-title">
+            <div class="card-head">
+                <span class="tag">Where it comes from</span>
+                <button class="info round-btn" type="button" aria-label="How to read the map"
+                    data-tip="Each country is shaded by how many of its Smithsonian objects are filed as miscellaneous, per 10,000 objects. Dividing by the collection size stops big collections from winning just by being big. Countries with fewer than 5 miscellaneous objects are hatched, because a rate from 1 or 2 objects isn’t reliable. Click a country to filter the page.">?</button>
+            </div>
+            <h2 id="map-title" class="card-title" data-title="country">Adjusted for collection size, the U.S. looks ordinary — Iraq, Ecuador, Russia and China stand out</h2>
+            <p class="card-text map-subtitle" id="map-subtitle"></p>
+            <div class="segmented" id="map-mode" role="group" aria-label="Map measure">
+                <button type="button" data-map-mode="rate" aria-pressed="true">Per 10,000 objects</button>
+                <button type="button" data-map-mode="count" aria-pressed="false">Total objects</button>
+            </div>
+            <div class="map-panel" data-color="white">
+                <div class="legend" id="map-legend" aria-label="Map legend"></div>
+                <div class="chart-canvas-full" id="map-chart"></div>
+            </div>
+            <p class="chart-note" id="map-note"></p>
+        </section>
+
+        <!-- MAP FACTS ------------------------------------------------------- -->
+        <section class="card cell-fact" data-card="fact-top" data-flip data-linked data-base-color="orange" data-color="orange" aria-label="Highest rate">
+            <p class="big-number" data-stat="topRate">…</p>
+            <p class="card-text">per 10,000 objects from <strong data-stat="topRatePlace">…</strong> are miscellaneous, the highest
+                rate on the map (<span data-stat="topRateCount">…</span> of <span data-stat="topRateTotal">…</span>).</p>
+        </section>
+
+        <section class="card cell-fact" data-card="fact-biggest" data-flip data-linked data-base-color="yellow" data-color="yellow" aria-label="Biggest collection compared">
+            <p class="big-number" data-stat="biggestRate">…</p>
+            <p class="card-text">per 10,000 for <strong data-stat="biggestPlace">…</strong>, which has the most objects
+                (<span data-stat="biggestCount">…</span>) — <span data-stat="biggestCompare">…</span> the map average of
+                <strong data-stat="averageRate">…</strong>.</p>
+        </section>
+
+        <section class="card cell-fact" data-card="fact-unplaced" data-flip data-linked data-base-color="ink" data-color="ink" aria-label="Objects without a place">
+            <p class="big-number" data-stat="unplacedShare">…</p>
+            <p class="card-text">of these objects (<span data-stat="unplaced">…</span>) have no place on record, so they
+                can’t be mapped.</p>
+        </section>
+
+        <!-- Collection Units ------------------------------------------------ -->
+        <article class="card cell-chart" data-card="units" data-dim="unit" data-flip data-linked data-base-color="blue" data-color="blue">
+            <div class="card-head">
+                <span class="tag">Who keeps it</span>
+                <button class="info round-btn" type="button" aria-label="How to read the collection units chart"
+                    data-tip="Each bar counts the objects held by one Smithsonian museum, library or archive; the six biggest are shown and the rest are grouped. Every object belongs to exactly one unit, so the bars add up to the total. Click a bar to filter the page.">?</button>
+            </div>
+            <h3 class="card-title" data-title="unit">The Libraries hold most of the collection</h3>
+            <p class="annotation" id="unit-note"></p>
+            <div class="chart-canvas" id="unit-chart"></div>
+        </article>
+
+        <!-- Object Types ---------------------------------------------------- -->
+        <article class="card cell-chart" data-card="types" data-dim="type" data-flip data-linked data-base-color="pink" data-color="pink">
+            <div class="card-head">
+                <span class="tag">What it is</span>
+                <button class="info round-btn" type="button" aria-label="How to read the object types chart"
+                    data-tip="Each object is counted once, by the first object type the Smithsonian lists for it. The eight most common types are shown. Click a bar to filter the page.">?</button>
+            </div>
+            <h3 class="card-title" data-title="type">Mostly paper, not curiosities</h3>
+            <p class="annotation" id="objectType-note"></p>
+            <div class="chart-canvas" id="objectType-chart"></div>
+        </article>
+
+        <!-- Chronological Spread -------------------------------------------- -->
+        <article class="card cell-timeline" data-card="decades" data-dim="decade" data-flip data-linked data-base-color="purple" data-color="purple">
+            <div class="card-head">
+                <span class="tag">When it’s from</span>
+                <button class="info round-btn" type="button" aria-label="How to read the decades chart"
+                    data-tip="Each column is a decade. An object is placed in the earliest decade it is dated to. Objects with no date, and the few dated before 1800, are counted in the note instead. Click a column to filter the page.">?</button>
+            </div>
+            <h3 class="card-title" data-title="decade">Peak miscellany: the 1960s</h3>
+            <p class="annotation" id="decade-note"></p>
+            <div class="chart-canvas" id="decade-chart"></div>
+        </article>
+
+        <section class="card cell-dated" data-card="dated" data-flip data-linked data-base-color="orange" data-color="orange" aria-label="Dated objects">
+            <span class="tag">On the timeline</span>
+            <p class="big-number" data-stat="datedShare">…</p>
+            <p class="card-text">of these objects have a date (<span data-stat="dated">…</span>). The other
+                <span data-stat="undated">…</span> can’t be placed in time.</p>
+        </section>
+
+        <!-- About ----------------------------------------------------------- -->
+        <footer class="card cell-about" data-color="ink">
+            <span class="tag">About the data</span>
+            <p class="card-text">
+                <span data-stat="grandTotal">…</span> records returned by the Smithsonian Open Access API for the search term
+                “miscellaneous”. Places are matched to countries by name (including U.S. states); an object that names several
+                countries counts once in each. Map rates divide by each country’s objects in the whole Smithsonian Open Access
+                collection (built by <code>build-country-totals.js</code>). Types use the first listed object type. Dates use the
+                earliest decade listed.
+            </p>
+        </footer>
+
+        <section class="card cell-credits" data-color="white" aria-label="Credits">
+            <p class="credits-big">P1M3</p>
+            <p class="card-text">Major Studio 1 · Prototype<br>Built with D3.js</p>
+        </section>
+
+    </main>
+
+    <button type="button" class="float-clear" id="float-clear" data-clear-filter hidden>
+        <span aria-hidden="true">✕</span> Clear filter <span class="float-clear-label" id="float-clear-label"></span>
+    </button>
+
+    <div id="tooltip" class="tooltip" role="tooltip" aria-hidden="true"></div>
+
+    <!-- Smithsonian-wide object totals per country (built by build-country-totals.js) -->
+    <script src="data/country_totals.js"></script>
+    <!-- Load dashboard logic -->
+    <script src="dashboard.js"></script>
+</body>
+</html>
